@@ -2,7 +2,7 @@
 
 /*
 
-Version: 0.2
+Version: 0.3
 Author: Kirk Roberts
 
 USAGE: just add the runtime.php to /config/apps.php
@@ -10,6 +10,10 @@ That's it.
 
 
 ## Change Log
+
+Version 0.3
+
+- added check to make sure the delimiter is present
 
 Version 0.2
 
@@ -28,28 +32,35 @@ function kirk_email_obfuscator_callback($buffer)
 {
 	
 	$delimiter = '</head>';
-	$markupParts = explode($delimiter, $buffer);
-	$str = $markupParts[1];
 
-	// find mailto: links
-	$pattern = "|(<a .*mailto:.+</a>)|";
-	preg_match_all($pattern, $str, $matches);
-	foreach ($matches[0] as $match) {
-		$replacement = kirk_email_obfuscator_obfuscate_text($match);
-		$str = str_replace($match, $replacement, $str);
+	$markupParts = explode($delimiter, $buffer);
+
+	if (count($markupParts) > 1) {
+
+		$str = $markupParts[1];
+
+		// find mailto: links
+		$pattern = "|(<a .*mailto:.+</a>)|";
+		preg_match_all($pattern, $str, $matches);
+		foreach ($matches[0] as $match) {
+			$replacement = kirk_email_obfuscator_obfuscate_text($match);
+			$str = str_replace($match, $replacement, $str);
+		}
+		
+		// find bare email addresses
+		$pattern = "/\b[A-Z0-9._%-]+@[A-Z0-9.-]+\.[A-Z]+\b(?!([^<]+)?>)/i";
+		preg_match_all($pattern, $str, $matches);
+		foreach ($matches[0] as $match) {
+			$replacement = kirk_email_obfuscator_obfuscate_text($match);
+			$str = str_replace($match, $replacement, $str);
+		}
+		
+		$markupParts[1] = $str;
+
 	}
-	
-	// find bare email addresses
-	$pattern = "/\b[A-Z0-9._%-]+@[A-Z0-9.-]+\.[A-Z]+\b(?!([^<]+)?>)/i";
-	preg_match_all($pattern, $str, $matches);
-	foreach ($matches[0] as $match) {
-		$replacement = kirk_email_obfuscator_obfuscate_text($match);
-		$str = str_replace($match, $replacement, $str);
-	}
-	
-	$markupParts[1] = $str;
 
 	return implode($delimiter, $markupParts);
+
 
 }
 
