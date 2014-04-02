@@ -9,20 +9,6 @@ USAGE: just add the runtime.php to /config/apps.php
 That's it.
 
 
-## Change Log
-
-Version 0.3
-
-- added check to make sure the delimiter is present
-
-Version 0.2
-
-- now only replaces emails after the closing </head> tag
-
-Version 0.1
-
-- initial version
-
 */
 
 
